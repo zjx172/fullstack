@@ -160,15 +160,40 @@
 // })
 
 
+// const mongoose = require('mongoose')
+
+// if ( process.argv.length<3 ) {
+//    console.log('Please provide the password as an argument: node mongo.js <password>')
+//   process.exit(1)
+// }
+
+// const password = process.argv[2]
+
+// const url =
+//   `mongodb+srv://fullstack:${password}@cluster0.3qg51.mongodb.net/note-app?retryWrites=true&w=majority`
 
 
-if (process.env.NODE_ENV !== 'production') {
+//  // RSNN8KfllbtyvCGk
+
+// mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
+
+// const noteSchema = new mongoose.Schema({
+//   content: String,
+//   date: Date,
+//   important: Boolean,
+// })
+
+// const Note = mongoose.model('Note', noteSchema)
+
+
+// if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
-}
+// }
 const express = require('express')
 const bodyParser = require('body-parser') 
 const app = express()
 const Note = require('./models/note')
+
 
 const logger = (request, response, next) => {
   console.log('Method:', request.method)
@@ -200,8 +225,12 @@ app.get('/api/notes/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-app.post('/api/notes', (request, response, next) => {
+app.post('/api/notes', (request, response) => {
   const body = request.body
+
+  if (body.content === undefined) {
+    return response.status(400).json({ error: 'content missing' })
+  }
 
   const note = new Note({
     content: body.content,
@@ -209,20 +238,18 @@ app.post('/api/notes', (request, response, next) => {
     date: new Date(),
   })
 
-  note.save()
-    .then(savedNote => {
-      response.json(savedNote.toJSON())
-    })
-    .catch(error => next(error))
+  note.save().then(savedNote => {
+    response.json(savedNote)
+  })
 })
 
-app.delete('/api/notes/:id', (request, response, next) => {
-  Note.findByIdAndRemove(request.params.id)
-    .then(result => {
-      response.status(204).end()
-    })
-    .catch(error => next(error))
-})
+// app.delete('/api/notes/:id', (request, response, next) => {
+//   Note.findByIdAndRemove(request.params.id)
+//     .then(result => {
+//       response.status(204).end()
+//     })
+//     .catch(error => next(error))
+// })
 
 app.put('/api/notes/:id', (request, response, next) => {
   const body = request.body
@@ -260,6 +287,7 @@ const errorHandler = (error, request, response, next) => {
 app.use(errorHandler)
 
 const PORT = process.env.PORT
+// const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })

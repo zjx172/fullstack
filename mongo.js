@@ -13,29 +13,16 @@ const url =
 //连接数据库
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 
-//新建模式
-// const noteSchema = new mongoose.Schema({
-//   content: {
-//     type: String,
-//     minlength: 5,
-//     required: true
-//   },
-//   date: { 
-//     type: Date,
-//     required: true
-//   },
-//   important: Boolean,
-// })
-
-//新建匹配的模型
-const Note = mongoose.model('Note', {
+const noteSchema = new mongoose.Schema({
   content: String,
   date: Date,
   important: Boolean,
 })
 
+const Note = mongoose.model('Note', noteSchema)
+
 // const note = new Note({
-//   content: 'HTML is Easy',
+//   content: 'HnjkbkjbjkTML is Easy',
 //   date: new Date(),
 //   important: true,
 // })
@@ -45,24 +32,11 @@ const Note = mongoose.model('Note', {
 //   mongoose.connection.close()
 // })
 
-const note = new Note({
-  content: 'Promise auttaa asynkronisissa operaatiossa',
-  date: new Date(),
-  important: false,
-})
-
-if (false) {
-  note.save().then(response => {
-    console.log('note saved!')
-    mongoose.connection.close()
-  })
-}
-
-
-
 Note.find({}).then(result => {
   result.forEach(note => {
     console.log(note)
   })
   mongoose.connection.close()
+}).catch(err=>{
+  console.log(err);
 })
