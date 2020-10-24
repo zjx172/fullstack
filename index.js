@@ -222,7 +222,10 @@ app.get('/api/notes/:id', (request, response, next) => {
         response.status(404).end()
       }
     })
-    .catch(error => next(error))
+    .catch(error => {
+		console.log(error)
+		response.status(500).end()
+    })
 })
 
 app.post('/api/notes', (request, response) => {
@@ -238,9 +241,13 @@ app.post('/api/notes', (request, response) => {
     date: new Date(),
   })
 
-  note.save().then(savedNote => {
-    response.json(savedNote)
-  })
+  note.save()
+	.then(savedNote => {return savedNote.toJSON()})
+	.then(savedAndFormattedNote => {
+		// console.log(savedAndFormattedNote,222)
+		response.json(savedAndFormattedNote)
+	}) 
+  .catch(error=>next(error))
 })
 
 // app.delete('/api/notes/:id', (request, response, next) => {
@@ -263,7 +270,7 @@ app.put('/api/notes/:id', (request, response, next) => {
     .then(updatedNote => {
       response.json(updatedNote.toJSON())
     })
-    .catch(error => next(error))
+    .catch(error => {next(error)})
 })
 
 const unknownEndpoint = (request, response) => {
