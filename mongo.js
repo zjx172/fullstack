@@ -32,7 +32,7 @@ const Note = mongoose.model('Note', {
   content: String,
   date: Date,
   important: Boolean,
-}))
+})
 
 // const note = new Note({
 //   content: 'HTML is Easy',
