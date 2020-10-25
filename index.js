@@ -186,115 +186,129 @@
 // const Note = mongoose.model('Note', noteSchema)
 
 
-// if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config()
+// // if (process.env.NODE_ENV !== 'production') {
+//   require('dotenv').config()
+// // }
+// const express = require('express')
+// const bodyParser = require('body-parser') 
+// const app = express()
+// const Note = require('./models/note')
+
+
+// const logger = (request, response, next) => {
+//   console.log('Method:', request.method)
+//   console.log('Path:  ', request.path)
+//   console.log('Body:  ', request.body)
+//   console.log('---')
+//   next()
 // }
-const express = require('express')
-const bodyParser = require('body-parser') 
-const app = express()
-const Note = require('./models/note')
 
+// app.use(express.static('build'))
+// app.use(bodyParser.json())
+// app.use(logger)
 
-const logger = (request, response, next) => {
-  console.log('Method:', request.method)
-  console.log('Path:  ', request.path)
-  console.log('Body:  ', request.body)
-  console.log('---')
-  next()
-}
-
-app.use(express.static('build'))
-app.use(bodyParser.json())
-app.use(logger)
-
-app.get('/api/notes', (request, response) => {
-  Note.find({}).then(notes => {
-    response.json(notes.map(note => note.toJSON()))
-  })
-})
-
-app.get('/api/notes/:id', (request, response, next) => {
-  Note.findById(request.params.id)
-    .then(note => {
-      if (note) {
-        response.json(note.toJSON())
-      } else {
-        response.status(404).end()
-      }
-    })
-    .catch(error => {
-		console.log(error)
-		response.status(500).end()
-    })
-})
-
-app.post('/api/notes', (request, response) => {
-  const body = request.body
-
-  if (body.content === undefined) {
-    return response.status(400).json({ error: 'content missing' })
-  }
-
-  const note = new Note({
-    content: body.content,
-    important: body.important || false,
-    date: new Date(),
-  })
-
-  note.save()
-	.then(savedNote => {return savedNote.toJSON()})
-	.then(savedAndFormattedNote => {
-		// console.log(savedAndFormattedNote,222)
-		response.json(savedAndFormattedNote)
-	}) 
-  .catch(error=>next(error))
-})
-
-// app.delete('/api/notes/:id', (request, response, next) => {
-//   Note.findByIdAndRemove(request.params.id)
-//     .then(result => {
-//       response.status(204).end()
-//     })
-//     .catch(error => next(error))
+// app.get('/api/notes', (request, response) => {
+//   Note.find({}).then(notes => {
+//     response.json(notes.map(note => note.toJSON()))
+//   })
 // })
 
-app.put('/api/notes/:id', (request, response, next) => {
-  const body = request.body
+// app.get('/api/notes/:id', (request, response, next) => {
+//   Note.findById(request.params.id)
+//     .then(note => {
+//       if (note) {
+//         response.json(note.toJSON())
+//       } else {
+//         response.status(404).end()
+//       }
+//     })
+//     .catch(error => {
+// 		console.log(error)
+// 		response.status(500).end()
+//     })
+// })
 
-  const note = {
-    content: body.content,
-    important: body.important,
-  }
+// app.post('/api/notes', (request, response) => {
+//   const body = request.body
 
-  Note.findByIdAndUpdate(request.params.id, note, { new: true })
-    .then(updatedNote => {
-      response.json(updatedNote.toJSON())
-    })
-    .catch(error => {next(error)})
-})
+//   if (body.content === undefined) {
+//     return response.status(400).json({ error: 'content missing' })
+//   }
 
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
-}
+//   const note = new Note({
+//     content: body.content,
+//     important: body.important || false,
+//     date: new Date(),
+//   })
 
-app.use(unknownEndpoint)
+//   note.save()
+// 	.then(savedNote => {return savedNote.toJSON()})
+// 	.then(savedAndFormattedNote => {
+// 		// console.log(savedAndFormattedNote,222)
+// 		response.json(savedAndFormattedNote)
+// 	}) 
+//   .catch(error=>next(error))
+// })
 
-const errorHandler = (error, request, response, next) => {
-  console.error(error.message)
+// // app.delete('/api/notes/:id', (request, response, next) => {
+// //   Note.findByIdAndRemove(request.params.id)
+// //     .then(result => {
+// //       response.status(204).end()
+// //     })
+// //     .catch(error => next(error))
+// // })
 
-  if (error.name === 'CastError' && error.kind == 'ObjectId') {
-    return response.status(400).send({ error: 'malformatted id' })
-  }  else if (error.name === 'ValidationError') {
-    return response.status(400).json({ error: error.message })
-  }
+// app.put('/api/notes/:id', (request, response, next) => {
+//   const body = request.body
 
-  next(error)
-}
+//   const note = {
+//     content: body.content,
+//     important: body.important,
+//   }
 
-app.use(errorHandler)
+//   Note.findByIdAndUpdate(request.params.id, note, { new: true })
+//     .then(updatedNote => {
+//       response.json(updatedNote.toJSON())
+//     })
+//     .catch(error => {next(error)})
+// })
 
-const PORT = process.env.PORT
-// const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+// const unknownEndpoint = (request, response) => {
+//   response.status(404).send({ error: 'unknown endpoint' })
+// }
+
+// app.use(unknownEndpoint)
+
+// const errorHandler = (error, request, response, next) => {
+//   console.error(error.message)
+
+//   if (error.name === 'CastError' && error.kind == 'ObjectId') {
+//     return response.status(400).send({ error: 'malformatted id' })
+//   }  else if (error.name === 'ValidationError') {
+//     return response.status(400).json({ error: error.message })
+//   }
+
+//   next(error)
+// }
+
+// app.use(errorHandler)
+
+// const PORT = process.env.PORT
+// // const PORT = process.env.PORT || 3001
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`)
+// })
+
+
+
+
+const app = require('./app')
+const http = require('http')
+const config = require('./utils/config')
+const logger = require('./utils/logger')
+
+const server = http.createServer(app)
+
+server.listen(config.PORT, () => {
+  logger.info(`Server running on port ${config.PORT}`)
 })
