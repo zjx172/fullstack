@@ -96,3 +96,11 @@ const noteSchema = new mongoose.Schema({
 - Mongoose 并没有内置的 validator 来检查某个字段的唯一性。我们可以使用一个现成的解决方案[mongoose-unique-validator](https://www.npmjs.com/package/mongoose-unique-validator) 这个 npm 包
 - [Github](https://github.com/fullstack-hy2020/part3-notes-backend/tree/part4-7)的 *part4-7* 分支中找到当前应用的代码
 - Mongoose 的 join 是通过[populate](http://mongoosejs.com/docs/populate.html) 方法完成的。
+
+
+
+------
+
+遇到的问题解决：
+
+- [Message “Async callback was not invoked within the 5000 ms timeout specified by jest.setTimeout”](https://stackoverflow.com/questions/49603939/message-async-callback-was-not-invoked-within-the-5000-ms-timeout-specified-by)
