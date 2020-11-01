@@ -80,16 +80,24 @@
 // export default App;
 
 
-import React from 'react'
+import React ,{useEffect} from 'react'
 import NewNote from './components/NewNote'
 import Notes from './components/Notes'
 import VisibilityFilter from './components/VisibilityFilter'
+// import noteService from './services/notes'
+import { initializeNotes } from './reducers/noteReducer'
+import {useDispatch } from 'react-redux'
 
 const App = () => {
   // const filterSelected = (value) => {
   //   console.log(value)
   // }
-
+  const dispatch = useDispatch()
+  useEffect(()=>{
+    // noteService
+    //  .getAll().then(notes=>dispatch(initializeNotes(notes)))
+    dispatch(initializeNotes())
+  },[dispatch])
   return (
     <div>
       <NewNote />
