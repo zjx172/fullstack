@@ -1,336 +1,182 @@
-为了完成这一章节，我们将研究使用 redux 的另一种更古老、更复杂的方法，redux 提供的[connect](https://github.com/reduxjs/react-redux/blob/master/docs/api/connect.md)-函数。
-
-### Using the connect-function to share the redux store to components
-
-【使用 connect-function 将 redux 存储共享给组件】
-
-让我们首先使用 connect 函数将*Notes* 组件转换为*连接组件*:
-
 ```js
-import React from 'react'
-import { connect } from 'react-redux'import { toggleImportanceOf } from '../reducers/noteReducer'
-
-const Notes = () => {
+import {
   // ...
-}
+  useParams} from "react-router-dom"
 
-const ConnectedNotes = connect()(Notes)export default ConnectedNotes
+const Note = ({ notes }) => {
+  const id = useParams().id
 ```
 
-该模块导出的*连接组件* 与之前的常规组件工作方式完全相同。
-
-组件需要 Redux 存储中的便笺列表和筛选器的值。 Connect 函数接受所谓的[mapStateToProps](https://github.com/reduxjs/react-redux/blob/master/docs/api/connect.md#mapStateToProps-state-ownprops--object)函数作为它的第一个参数。 这个函数可以用来定义基于 Redux 存储状态的*连接组件* 的props。
-
-如果我们定义:
-
-```js
-const Notes = (props) => {  const dispatch = useDispatch()
-
-  const notesToShow = () => {    if ( props.filter === 'ALL ') {      return props.notes    }        return props.filter  === 'IMPORTANT'       ? props.notes.filter(note => note.important)      : props.notes.filter(note => !note.important)  }
-  return(
-    <ul>
-      {notesToShow().map(note =>        <Note
-          key={note.id}
-          note={note}
-          handleClick={() => 
-            dispatch(toggleImportanceOf(note.id))
-          }
-        />
-      )}
-    </ul>
-  )
-}
-
-const mapStateToProps = (state) => {
-  return {
-    notes: state.notes,
-    filter: state.filter,
-  }
-}
-
-const ConnectedNotes = connect(mapStateToProps)(Notes)
-export default ConnectedNotes
-```
-
-该模块导出的*连接组件* 与之前的常规组件工作方式完全相同。
-
-组件需要 Redux 存储中的便笺列表和筛选器的值。 Connect 函数接受所谓的[mapStateToProps](https://github.com/reduxjs/react-redux/blob/master/docs/api/connect.md#mapStateToProps-state-ownprops--object)函数作为它的第一个参数。 这个函数可以用来定义基于 Redux 存储状态的*连接组件* 的props。
-
-如果我们定义:
-
-```js
-const Notes = (props) => {  const dispatch = useDispatch()
-
-  const notesToShow = () => {    if ( props.filter === 'ALL ') {      return props.notes    }        return props.filter  === 'IMPORTANT'       ? props.notes.filter(note => note.important)      : props.notes.filter(note => !note.important)  }
-  return(
-    <ul>
-      {notesToShow().map(note =>        <Note
-          key={note.id}
-          note={note}
-          handleClick={() => 
-            dispatch(toggleImportanceOf(note.id))
-          }
-        />
-      )}
-    </ul>
-  )
-}
-
-const mapStateToProps = (state) => {
-  return {
-    notes: state.notes,
-    filter: state.filter,
-  }
-}
-
-const ConnectedNotes = connect(mapStateToProps)(Notes)
-export default ConnectedNotes
-```
-
-Notes组件可以直接访问存储的状态，例如通过包含便笺列表的 propss.Notes。 类似地，props.filter 引用了过滤器的值。
-
-使用*connect* 和我们定义的*mapStateToProps* 函数的结果可以这样可视化:
-
-![fullstack content](https://fullstackopen.com/static/8d9b109ea7cd8799e42f204d5a7ae39e/5a190/24c.png)
-
-
-
-Notes 组件通过 props.Notes 和*props.filter* 具有“直接访问”功能，用于检查 Redux 存储的状态。
-
-【跟vue的mixin差不多】
-
-Notelist 组件实际上不需要关于选择哪个过滤器的信息，因此我们可以将过滤逻辑移到其他位置。
-
-我们只需要在便笺props中给它正确过滤的便笺:
-
-```js
-const Notes = (props) => {  const dispatch = useDispatch()
-
-  return(
-    <ul>
-      {props.notes.map(note =>
-        <Note
-          key={note.id}
-          note={note}
-          handleClick={() => 
-            dispatch(toggleImportanceOf(note.id))
-          }
-        />
-      )}
-    </ul>
-  )
-}
-
-const mapStateToProps = (state) => {  if ( state.filter === 'ALL' ) {    return {      notes: state.notes    }  }  return {    notes: (state.filter  === 'IMPORTANT'       ? state.notes.filter(note => note.important)      : state.notes.filter(note => !note.important)    )  }}
-const ConnectedNotes = connect(mapStateToProps)(Notes)
-export default ConnectedNotes  
-```
+Note 组件接收所有的便笺作为 props *notes*，它可以通过 react-router 的[useParams](https://reacttraining.com/react-router/web/api/hooks/useParams)函数访问 url 参数(要显示的便笺的 id)。
 
 ------
 
-### mapDispatchToProps
+### useHistory
 
-现在这个组件可以通过它的props调用函数直接调用*toggleImportanceOf* action creator 定义的action:
+导航到*Login*-视图 的选项在菜单中有条件地渲染。
 
 ```js
-const Notes = (props) => {
-  return(
-    <ul>
-      {props.notes.map(note =>
-        <Note
-          key={note.id}
-          note={note}
-          handleClick={() => props.toggleImportanceOf(note.id)}
-        />
-      )}
-    </ul>
-  )
-}
+<Router>
+  <div>
+    <Link style={padding} to="/">home</Link>
+    <Link style={padding} to="/notes">notes</Link>
+    <Link style={padding} to="/users">users</Link>
+    {user      ? <em>{user} logged in</em>      : <Link style={padding} to="/login">login</Link>    }  </div>
+
+  // ...
+</Router>
 ```
 
-当使用 connect 时，我们可以简单地这样做:
+处理登录功能的组件代码如下
 
 ```js
-props.toggleImportanceOf(note.id)
-```
+import {
+  // ...
+  useHistory} from 'react-router-dom'
 
-不需要单独调用 dispatch 函数，因为 connect 已经将 *toggleImportanceOf* action creator 修改为包含 dispatch 的形式。
-
-了解 mapDispatchToProps 的工作原理可能需要一些时间，特别是当我们了解了[使用它的替代方法](https://fullstackopen.com/zh/part6/connect方法#alternative-way-of-using-map-dispatch-to-props)之后。
-
-使用连接产生的结果可以这样想象:
-
-![fullstack content](https://fullstackopen.com/static/fa7e363e012d376ac17d5a8fbc3cae9d/5a190/25b.png)
-
-
-
-除了通过*props.notes* 和*props.filter* 访问存储的状态外，该组件还引用了一个函数，该函数可以通过其*toggleimportof* prop 用于分派*TOGGLE IMPORTANCE*-类型操作。
-
-我们也可以使用 connect 来创建新便笺:
-
-```js
-import React from 'react'
-import { connect } from 'react-redux' 
-import { createNote } from '../reducers/noteReducer'
-
-const NewNote = (props) => {  
-  const addNote = async (event) => {
+const Login = (props) => {
+  const history = useHistory()
+  const onSubmit = (event) => {
     event.preventDefault()
-    const content = event.target.note.value
-    event.target.note.value = ''
-    props.createNote(content)  }
-
-  return (
-    <form onSubmit={addNote}>
-      <input name="note" />
-      <button type="submit">add</button>
-    </form>
-  )
-}
-
-export default connect(  null,   { createNote })(NewNote)
+    props.onLogin('mluukkai')
+    history.push('/')  }
 ```
-
-由于组件不需要访问存储的状态，我们可以简单地将*null* 作为连接的第一个参数
 
 ------
 
-### Alternative way of using mapDispatchToProps
+### redirect
 
-【使用 mapDispatchToProps 的另一种方式】
-
-我们如下面的方式定义了从连接的*NewNote* 组件发送操作的函数:
+关于*Users* 路由还有一个有趣的细节:
 
 ```js
-const NewNote = () => {
-  // ...
-}
-
-export default connect(
-  null,
-  { createNote }
-)(NewNote)
+<Route path="/users" render={() =>
+  user ? <Users /> : <Redirect to="/login" />
+} />
 ```
 
-我们可以将下面的*function* 定义作为连接的第二个参数:
+如果用户未登录，则不渲染*Users* 组件。 相反，用户*使用\*Redirect\*组件重定向到登录视图*
+
+------
+
+### Hooks
+
+React 提供了10种不同的内置Hook，其中最受欢迎的是我们已经广泛使用的[useState](https://reactjs.org/docs/hooks-reference.html  https://reactjs.org/docs/hooks-reference.html#useState)和[useEffect](https://reactjs.org/docs/hooks-reference.html#useEffect) Hook。
+
+在[第5章](https://fullstackopen.com/zh/part5/props_children_与_proptypes#references-to-components-with-ref)中，我们使用了[useImperativeHandle](https://reactjs.org/docs/hooks-reference.html#useImperativeHandle)-hook，它允许组件为其他组件提供其功能。
+
+在过去的一年里，许多 React 库已经开始提供基于 hook 的 api。正如[第6章](https://fullstackopen.com/zh/part6/flux架构与_redux)所讲的。
+
+我们使用 react-redux 库中的[useSelector](https://react-redux.js.org/api/hooks#useSelector)和[useDispatch](https://react-redux.js.org/api/hooks#useDispatch)Hook来共享我们对组件的 redux-store 和 dispatch 函数。 
+
+Redux 的基于Hook的 api 比旧的、仍然可用的[connect](https://fullstackopen.com/zh/part6/connect方法)-api 更易于使用。
+
+我们在[上一章节](https://fullstackopen.com/zh/part7/react_router)中介绍的[React-router](https://reacttraining.com/React-router/web/guides)的 api 也部分基于[hook](https://reacttraining.com/React-router/web/api/hooks)。 它的Hook可以用来访问 url 参数和历史对象，这允许以编程方式操作浏览器的 url。
+
+正如在[第1章](https://fullstackopen.com/zh/part1/深入_react_应用调试#rules-of-hooks)中提到的，Hook不是正常的函数，在使用这些函数时，我们必须遵守某些[规则或限制](https://reactjs.org/docs/hooks-rules.html)。
+
+ 让我们回顾一下使用Hook的规则，一字不差地从官方的 React 文档中复制下来:
+
+**Don’t call Hooks inside loops, conditions, or nested functions.** Instead, always use Hooks at the top level of your React function.
+
+**不要在循环、条件或嵌套函数中调用 Hooks。**取而代之的是，始终在 React 函数的顶层使用 Hooks。
+
+**Don’t call Hooks from regular JavaScript functions.** Instead, you can:
+
+**不要从常规的 JavaScript 函数中调用 Hooks**，取而代之的是，你可以:
+
+- Call Hooks from React function components.
+- 从 React 函数组件调用Hook。
+- Call Hooks from custom Hooks
+- 从自定义Hook调用Hook
+
+------
+
+### Custom hooks
+
+【自定义Hook】
+
+React 提供了创建我们自己的[自定义](https://reactjs.org/docs/hooks-custom.html)Hook的选项。 根据 React，自定义Hook的主要目的是促进组件中使用的逻辑的重用。
+
+> 构建自己的 hook 可以让您将组件逻辑提取到可重用的函数中
+
+自定义Hook是常规的 JavaScript 函数，可以使用任何其他Hook，只要它们遵循[hook 的规则](https://fullstackopen.com/zh/part1/深入_react_应用调试#rules-of-hooks)。 此外，自定义Hook的名称必须以单词 use 开头。
+
+让我们将计数器逻辑提取到它自己的自定义Hook中，Hook的代码如下:
 
 ```js
-const NewNote = (props) => {
-  // ...
-}
+const useCounter = () => {
+  const [value, setValue] = useState(0)
 
-const mapDispatchToProps = dispatch => {  return {    createNote: value => {      dispatch(createNote(value))    },  }}
-export default connect(
-  null,
-  mapDispatchToProps
-)(NewNote)
-```
-
-在这个替代定义中， mapDispatchToProps是一个函数，它通过将 dispatch-function 作为参数传递给它来调用它。 函数的返回值是一个对象，它定义了一组作为props传递给连接组件的函数。 我们的示例将传递的函数定义为 createNote prop:
-
-```js
-value => {
-  dispatch(createNote(value))
-}
-```
-
-它只是分发使用*createNote* action创建器创建的action。
-
-
-
-
-
-然后，该组件通过其 props.createNote 引用该函数:
-
-```js
-const NewNote = (props) => {
-  const addNote = (event) => {
-    event.preventDefault()
-    const content = event.target.note.value
-    event.target.note.value = ''
-    props.createNote(content)
+  const increase = () => {
+    setValue(value + 1)
   }
 
-  return (
-    <form onSubmit={addNote}>
-      <input name="note" />
-      <button type="submit">add</button>
-    </form>
-  )
+  const decrease = () => {
+    setValue(value - 1)
+  }
+
+  const zero = () => {
+    setValue(0)
+  }
+
+  return {
+    value, 
+    increase,
+    decrease,
+    zero
+  }
 }
 ```
 
-这个概念相当复杂，通过文本来描述它是具有挑战性的。 在大多数情况下，使用更简单的*mapDispatchToProps* 就足够了。 然而，在有些情况下，需要更复杂的定义，比如*分派的操作* 需要引用[组件的支持](https://github.com/gaearon/redux-devtools/issues/250#issuecomment-186429931)。
+我们的自定义Hook在内部使用 useState Hook来创建自己的状态。 Hook返回一个对象，其属性包括计数器的值以及操作值的函数。
 
-Redux的创建者 Dan Abramov 创建了一个非常棒的教程，叫做 [Getting started with Redux](https://egghead.io/courses/getting-started-with-redux) ，你可以在 [Egghead.io](https://egghead.io/courses/Getting-started-with-Redux)上找到这个 。 我向每个人强烈推荐这个教程。 最后四个视频讨论了连接方法，特别是使用它的更“复杂”的方式。
+React组件可以使用如下所示的Hook:
 
-------
+```js
+const App = (props) => {
+  const counter = useCounter()
+```
 
-### Presentational/Container revisited
 
-【复习表现层/容器】
-
-演示组件:
-
-关心事物的外观。
-
-- 可能包含表示和容器组件，并且通常有一些 DOM 标签和它们自己的样式。
-
-- 经常允许通过建筑物进行隔离。
-
-- 不依赖于应用的其他部分，如 Redux 操作或store。
-
-- 不要说明数据是如何加载或Mutation的。
-
-- 只通过props接收数据和回调。
-
-- 很少有自己的状态(当他们这样做时，是 UI 状态而不是数据)。
-
-- 除非需要状态、生命周期Hook或性能优化，否则被编写为功能组件。
-
-  容器组件:
-
-  - 关心事物的运作方式。
-
-  - 内部可能包含表示和容器组件，但通常没有它们自己的 DOM 标签，除了一些包装的 div，并且从来没有任何样式。
-
-  - 为表示或其他容器组件提供数据和行为。
-
-  - 调用 Redux 操作，并将其作为表示组件的回调提供。
-
-    通常是有状态的，因为它们倾向于作为数据源。
-
-  - 通常使用高阶组件(如 React Redux 中的 connect)生成，而不是手写。
 
 ------
 
-### Redux and the component state
+### Spread attributes
 
-【Redux 和组件状态】
+【展开属性】
 
-我们在这个过程中已经走了很长的路，最后，我们已经到了我们使用 React“ the right way”的地步，意思是 React 只关注于生成视图，应用状态完全独立于 Redux 组件，并传递到 Redux、 Redux 的action和 Redux 的还原器。
+正如 React 文档中的[示例](https://reactjs.org/docs/jsx-in-depth.html#spread-attributes)所述，如下两种方法为组件传递props可以得到完全相同的结果:
 
-那么 useState-hook 呢? 它为组件提供它们自己的状态？ 如果应用正在使用 Redux 或其他外部状态管理解决方案，它是否有任何作用？ 如果应用具有更复杂的形式，那么使用 useState 函数提供的状态实现它们的本地状态可能有益。 当然，可以让 Redux 管理表单的状态，但是，如果表单的状态只在填写表单时有关(例如用于验证) ，那么将状态的管理留给负责表单的组件可能是明智的。
+```js
+<Greeting firstName='Arto' lastName='Hellas' />
+
+const person = {
+  firstName: 'Arto',
+  lastName: 'Hellas'
+}
+
+<Greeting {...person} />
+```
 
 ------
 
-概念：
+工具概念：
 
--  Connect 函数接受所谓的[mapStateToProps](https://github.com/reduxjs/react-redux/blob/master/docs/api/connect.md#mapStateToProps-state-ownprops--object)函数作为它的第一个参数。 这个函数可以用来定义基于 Redux 存储状态的*连接组件* 的props。
+- [useHistory](https://reacttraining.com/react-router/web/api/hooks/useHistory 路由)
 
-- Connect 函数的第二个参数可用于定义[mapDispatchToProps](https://github.com/reduxjs/react-redux/blob/master/docs/api/connect.md#mapDispatchToProps-object--dispatch-ownprops--object) ，它是一组作为props传递给连接组件的 *action creator* 函数。 
+- [useParams](https://reacttraining.com/react-router/web/api/Hooks/useparams)
 
-- 重构的*Notes* 组件几乎完全集中在渲染便笺上，并且非常接近于所谓的[表示组件](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0)。 根据 Dan Abramov 提供的 [description](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0)
+- *一种方法是使用 react-router 的*[useRouteMatch](https://reacttraining.com/react-router/web/api/hooks/useRouteMatch)*Hook来计算出应用组件中显示的便笺的 id。*
 
-- Redux的创建者 Dan Abramov 创建了一个非常棒的教程，叫做 [Getting started with Redux](https://egghead.io/courses/getting-started-with-redux) ，你可以在 [Egghead.io](https://egghead.io/courses/Getting-started-with-Redux)上找到这个 。 
+- ### More about hooks
 
-- 阿布拉莫夫提到了术语[高阶组件](https://reactjs.org/docs/higher-order-components.html)。*Notes* 组件是常规组件的一个例子，而 React-Redux 提供的*connect* 方法是*高阶组件* 的一个例子。 从本质上讲，高阶组件是接受“ regular”组件作为参数的函数，然后返回一个新的“ regular”组件作为其返回值。
+  【关于Hook更多知识】
 
-  高阶组件(High order components，简称 hoc)是定义可应用于组件的通用功能的一种方法。 这是一个来自函数式编程的概念，非常类似于面向对象编程中的继承。
+  互联网上开始充斥着越来越多关于Hook的有用资料。 如下是值得一查的资料来源:
 
-  Hoc 实际上是[高阶函数](https://en.wikipedia.org/wiki/higher-order_function)(HOF)概念的推广。 Hofs 是接受函数作为参数或返回函数的函数。 实际上我们在整个课程中一直在使用 HOFs，例如，所有用于处理数组如 map、 filter 和 find 的方法都是 HOFs。
+  - [Awesome React Hooks Resources](https://github.com/rehooks/Awesome-React-Hooks)
+  - [Easy to understand React Hook recipes by Gabe Ragland](https://usehooks.com/)
+  - [Why Do React Hooks Rely on Call Order?](https://overreacted.io/why-do-hooks-rely-on-call-order/)
 
-- 我们应该一直使用 redux 吗？ 可能不是。 Redux 的开发者 Dan Abramov 在他的文章 [You Might Not Need Redux](https://medium.com/@dan_abramov/you-might-not-need-redux-be46360cf367)中讨论了这个
-
-- 现在，通过使用 React [context](https://reactjs.org/docs/context.html)-api 和[useReducer](https://reactjs.org/docs/hooks-reference.html#useReducer)-hook，不需要 redux 就可以实现类似 redux 的状态管理。
+  
 
